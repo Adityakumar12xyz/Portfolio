@@ -474,7 +474,7 @@
                 if (pdfSrc) {
                     if (modalImg) modalImg.style.display = 'none';
                     if (modalIframe) {
-                        modalIframe.src = pdfSrc + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+                        modalIframe.src = encodeURI(pdfSrc) + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
                         modalIframe.style.display = 'block';
                     }
                 } else {
@@ -700,10 +700,28 @@
     animateParticles();
     startAutoColorCycle();
 
+    // ── AUTOMATIC DEVICE & SYSTEM DETECTION ────────────────────────────
+    function updateDeviceDetection() {
+        const w = window.innerWidth;
+        const ua = navigator.userAgent.toLowerCase();
+        const isMac = ua.includes('macintosh') || ua.includes('mac os');
+        const isTablet = (w >= 640 && w <= 1024) || /ipad|tablet|(android(?!.*mobile))/i.test(ua);
+        const isMobile = w < 640 || /iphone|ipod|android.*mobile|windows phone|blackberry/i.test(ua);
+        const isDesktop = w > 1024 && !isTablet;
+
+        document.documentElement.classList.toggle('is-mobile', isMobile);
+        document.documentElement.classList.toggle('is-tablet', isTablet);
+        document.documentElement.classList.toggle('is-desktop', isDesktop);
+        document.documentElement.classList.toggle('is-mac', isMac);
+        document.documentElement.classList.toggle('is-4k', w >= 2560);
+    }
+    updateDeviceDetection();
+
     // Mouse tracking for particles
     window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; }, {passive:true});
     window.addEventListener('mouseout',  ()  => { mouse.x=null; mouse.y=null; });
-    window.addEventListener('resize',    ()  => initParticles());
+    window.addEventListener('resize',    ()  => { initParticles(); updateDeviceDetection(); });
+    window.addEventListener('orientationchange', updateDeviceDetection);
 
     // Command center events (after DOM built)
     $('cc-btn').addEventListener('click',  () => $('cc-panel').classList.add('active'));
